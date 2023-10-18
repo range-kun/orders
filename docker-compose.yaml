@@ -1,0 +1,29 @@
+version: "3.9"
+
+services:
+  orders:
+    build: .
+    restart: always
+    container_name: orders
+    ports:
+      - "8008:8008"
+    depends_on:
+      order_db:
+        condition: service_healthy
+
+  order_db:
+    image: postgres:15.2
+    environment:
+      - POSTGRES_PASSWORD=postgres
+    volumes:
+      - orders_db_volume:/var/lib/postgresql/data
+    ports:
+    - "5432:5432"
+    healthcheck:
+      test: pg_isready -d ${POSTGRES_DB} -U ${POSTGRES_USER}
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  orders_db_volume:
