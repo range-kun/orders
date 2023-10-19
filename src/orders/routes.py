@@ -30,10 +30,10 @@ async def create_category() -> None:
 
 
 @category_router.get("/{category_id}")
-async def get_category() -> None:
+async def get_category(category_id: int) -> None:
     pass
 
 
 @category_router.delete("/{category_id}")
-async def delete_category() -> None:
+async def delete_category(category_id: int) -> None:
     pass
