@@ -4,6 +4,7 @@ from alembic import context
 from sqlalchemy import create_engine
 
 from core.config.db import settings_db
+from mirations.base import meta
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
@@ -18,7 +19,7 @@ if config.config_file_name is not None:
 # for 'autogenerate' support
 # from myapp import mymodel
 # target_metadata = mymodel.Base.metadata
-target_metadata = None
+target_metadata = meta
 
 # other values from the config, defined by the needs of env.py,
 # can be acquired:
@@ -57,7 +58,7 @@ def run_migrations_online() -> None:
     and associate a connection with the context.
 
     """
-    connectable = create_engine(settings_db.DB_URL)
+    connectable = create_engine(settings_db.SYNC_DB_URL)
 
     with connectable.connect() as connection:
         context.configure(connection=connection, target_metadata=target_metadata)
