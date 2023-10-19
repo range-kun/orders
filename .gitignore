@@ -24,6 +24,7 @@ __pycache__/
 *.py[cod]
 .pyc
 *.pyc
+.env
 
 !*media/.gitkeep
 !*media/default
@@ -39,3 +40,4 @@ make.bat
 
 doc-dev
 .vscode/*
+/.ruff_cache/
