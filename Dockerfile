@@ -27,4 +27,6 @@ RUN poetry config virtualenvs.create false && poetry install --no-interaction --
 
 COPY . .
 
-CMD ["sh", "-c", "uvicorn src.orders.app:app --reload --host 0.0.0.0 --port 8008 --use-colors"]
+ENV PYTHONPATH "${PYTHONPATH}:/app"
+
+CMD ["sh", "-c", "python3 src/orders/__init__.py"]

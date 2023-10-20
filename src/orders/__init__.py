@@ -12,4 +12,4 @@ app.include_router(category_router)
 
 
 if __name__ == "__main__":
-    uvicorn.run("src.orders:app", use_colors=True, reload=True)
+    uvicorn.run("src.orders:app", use_colors=True, reload=True, port=8008, host="0.0.0.0")

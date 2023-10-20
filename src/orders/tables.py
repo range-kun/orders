@@ -1,9 +1,9 @@
 from datetime import datetime
 
 import sqlalchemy as sa
+from sqlalchemy import MetaData
 
-from core.db import meta
-
+meta = MetaData()
 products = sa.Table(
     "products",
     meta,
