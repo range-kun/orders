@@ -3,7 +3,7 @@ from logging.config import fileConfig
 from alembic import context
 from sqlalchemy import create_engine
 
-from core.config.db import settings_db
+from core.config.order_settings import Settings
 from mirations.base import meta
 
 # this is the Alembic Config object, which provides
@@ -20,6 +20,7 @@ if config.config_file_name is not None:
 # from myapp import mymodel
 # target_metadata = mymodel.Base.metadata
 target_metadata = meta
+DB_URL = Settings().POSTGRES_DSN
 
 # other values from the config, defined by the needs of env.py,
 # can be acquired:
@@ -39,7 +40,7 @@ def run_migrations_offline() -> None:
     script output.
 
     """
-    url = settings_db.SYNC_DB_URL
+    url = DB_URL.SYNC_DB_URL
     context.configure(
         url=url,
         target_metadata=target_metadata,
@@ -58,7 +59,7 @@ def run_migrations_online() -> None:
     and associate a connection with the context.
 
     """
-    connectable = create_engine(settings_db.SYNC_DB_URL)
+    connectable = create_engine(DB_URL)
 
     with connectable.connect() as connection:
         context.configure(connection=connection, target_metadata=target_metadata)

@@ -29,4 +29,4 @@ COPY . .
 
 ENV PYTHONPATH "${PYTHONPATH}:/app"
 
-CMD ["sh", "-c", "python3 src/orders/__init__.py"]
+CMD ["sh", "-c", "python3 src/orders/app.py"]
