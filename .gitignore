@@ -40,4 +40,6 @@ make.bat
 
 doc-dev
 .vscode/*
-/.ruff_cache/
+.ruff_cache/
+.mypy_cache/
+.pytest_cache/
