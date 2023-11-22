@@ -143,6 +143,7 @@ async def test_update_product_success(client, test_data_for_products):
     assert updated_product["category_id"] == fetched_product["category"]["id"]
 
 
+@pytest.mark.usefixtures("load_fixtures")
 async def test_update_not_existing_object(client, test_data_for_products):
     new_updated_product = jsonable_encoder(test_data_for_products[0])
     response_update = client.put(f"{PRODUCTS_PREFIX}/999", json=new_updated_product)

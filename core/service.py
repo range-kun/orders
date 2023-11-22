@@ -22,4 +22,9 @@ class BaseService(Generic[PyModel, T]):
         return self.response_model(**result[0])
 
     async def delete(self, id_: int) -> None:
-        return await self.repository.delete(id=id_)
+        await self.repository.delete(id=id_)
+
+
+class KafkaInterface(Generic[PyModel, T]):
+    payload_schema: type[PyModel]
+    event_schema: type[T]

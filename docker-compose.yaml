@@ -10,6 +10,8 @@ services:
     depends_on:
       order_db:
         condition: service_healthy
+      kafka_1:
+        condition: service_started
 
   order_db:
     image: postgres:15.2
@@ -25,5 +27,51 @@ services:
       timeout: 5s
       retries: 5
 
+  zookeeper:
+    image: zookeeper:3.9.1
+    hostname: zookeeper
+    ports:
+      - "2181:2181"
+    environment:
+      ZOO_MY_ID: 1
+    volumes:
+      - zoo_data:/data
+      - zoo_log:/datalog
+
+  kafka_1:
+    image: confluentinc/cp-kafka:latest
+    hostname: kafka_1
+    ports:
+      - "9091:9091"
+    environment:
+      KAFKA_ADVERTISED_LISTENERS: LISTENER_DOCKER_INTERNAL://kafka_1:19091,LISTENER_DOCKER_EXTERNAL://localhost:9091
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: LISTENER_DOCKER_INTERNAL:PLAINTEXT,LISTENER_DOCKER_EXTERNAL:PLAINTEXT
+      KAFKA_INTER_BROKER_LISTENER_NAME: LISTENER_DOCKER_INTERNAL
+      KAFKA_ZOOKEEPER_CONNECT: "zookeeper:2181"
+      KAFKA_LISTENERS: LISTENER_DOCKER_INTERNAL://kafka_1:19091,LISTENER_DOCKER_EXTERNAL://0.0.0.0:9091
+      KAFKA_BROKER_ID: 1
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+    volumes:
+      - kafka_volume:/var/lib/kafka/data
+    depends_on:
+      - zookeeper
+
+  kafdrop:
+    image: obsidiandynamics/kafdrop
+    restart: "no"
+    ports:
+      - "9000:9000"
+    environment:
+      KAFKA_BROKERCONNECT: "kafka_1:19091"
+    depends_on:
+      - kafka_1
+
 volumes:
   db_volume:
+  kafka_volume:
+  zoo_data:
+  zoo_log:
+
+networks:
+  default:
+    name: ddev_default
