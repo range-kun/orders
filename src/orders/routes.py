@@ -1,39 +1,82 @@
-from fastapi import APIRouter
+from typing import Annotated
 
-product_router = APIRouter(tags=["product"], prefix="/products")
-category_router = APIRouter(tags=["categories"], prefix="/categories")
+from fastapi import APIRouter, Depends
+from starlette import status
+from starlette.responses import Response
+
+from src.orders.dependencies import (
+    get_category_service,
+    get_product_service,
+    get_product_service_update,
+)
+from src.orders.schemas import (
+    CategoryBase,
+    CategoryOut,
+    ProductCreate,
+    ProductCreated,
+    ProductOut,
+)
+from src.orders.services import CategoryService, ProductCreateService, ProductOutService
+
+CATEGORIES_PREFIX = "/categories"
+PRODUCTS_PREFIX = "/products"
+
+product_router = APIRouter(tags=["product"], prefix=PRODUCTS_PREFIX)
+category_router = APIRouter(tags=["categories"], prefix=CATEGORIES_PREFIX)
 
 
 @product_router.get("/{product_id}")
-async def get_product(product_id: int) -> None:
-    pass
+async def get_product(
+    product_id: int, product_service: Annotated[ProductOutService, Depends(get_product_service)]
+) -> ProductOut:
+    return await product_service.retrieve(id_=product_id)
 
 
 @product_router.put("/{product_id}")
-async def update_product(product_id: int) -> None:
-    pass
+async def change_product(
+    product_id: int,
+    product: ProductCreate,
+    product_service: Annotated[ProductCreateService, Depends(get_product_service_update)],
+) -> ProductCreated:
+    return await product_service.update_single(product_id, product)
 
 
 @product_router.delete("/{product_id}")
-async def delete_product(product_id: int) -> None:
-    pass
+async def delete_product(
+    product_id: int, product_service: Annotated[ProductOutService, Depends(get_product_service)]
+) -> Response:
+    await product_service.delete(product_id)
+    return Response(status_code=status.HTTP_204_NO_CONTENT)
 
 
-@product_router.post("")
-async def create_product() -> None:
-    pass
+@product_router.post("", status_code=status.HTTP_201_CREATED)
+async def create_product(
+    product: ProductCreate,
+    product_service: Annotated[ProductCreateService, Depends(get_product_service_update)],
+) -> ProductCreated:
+    return await product_service.add(product)
 
 
-@category_router.post("")
-async def create_category() -> None:
-    pass
+@category_router.post("", status_code=status.HTTP_201_CREATED)
+async def create_category(
+    category: CategoryBase,
+    category_service: Annotated[CategoryService, Depends(get_category_service)],
+) -> CategoryOut:
+    return await category_service.add(category)
 
 
 @category_router.get("/{category_id}")
-async def get_category(category_id: int) -> None:
-    pass
+async def get_category(
+    category_id: int,
+    category_service: Annotated[CategoryService, Depends(get_category_service)],
+) -> CategoryOut:
+    return await category_service.retrieve(id_=category_id)
 
 
 @category_router.delete("/{category_id}")
-async def delete_category(category_id: int) -> None:
-    pass
+async def delete_category(
+    category_id: int,
+    category_service: Annotated[CategoryService, Depends(get_category_service)],
+) -> Response:
+    await category_service.delete(id_=category_id)
+    return Response(status_code=status.HTTP_204_NO_CONTENT)

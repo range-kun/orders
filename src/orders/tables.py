@@ -12,7 +12,7 @@ products = sa.Table(
     sa.Column("description", sa.Text),
     sa.Column("price", sa.DECIMAL(12, 2), nullable=False),
     sa.Column("created", sa.DateTime, default=datetime.utcnow()),
-    sa.Column("category_id", sa.Integer, sa.ForeignKey("categories.id"), nullable=False),
+    sa.Column("category_id", sa.Integer, sa.ForeignKey("categories.id", ondelete="SET NULL")),
 )
 
 
@@ -24,4 +24,4 @@ categories = sa.Table(
     sa.Column("description", sa.Text),
 )
 
-__all__ = [products, categories]
+__all__ = ["products", "categories", "meta"]

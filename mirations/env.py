@@ -1,10 +1,10 @@
 from logging.config import fileConfig
 
 from alembic import context
+from base import meta
 from sqlalchemy import create_engine
 
 from core.config.order_settings import Settings
-from mirations.base import meta
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
@@ -20,7 +20,7 @@ if config.config_file_name is not None:
 # from myapp import mymodel
 # target_metadata = mymodel.Base.metadata
 target_metadata = meta
-DB_URL = Settings().POSTGRES_DSN
+DB_URL = Settings().SYNC_DB_URL
 
 # other values from the config, defined by the needs of env.py,
 # can be acquired:
@@ -40,7 +40,7 @@ def run_migrations_offline() -> None:
     script output.
 
     """
-    url = DB_URL.SYNC_DB_URL
+    url = DB_URL
     context.configure(
         url=url,
         target_metadata=target_metadata,

@@ -25,4 +25,4 @@ if __name__ == "__main__":
     settings = Settings()
     app = create_app(settings)
 
-    uvicorn.run(app, use_colors=True, port=8008, host="0.0.0.0")
+    uvicorn.run(app, use_colors=True, port=8009, host="0.0.0.0")
