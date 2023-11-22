@@ -36,5 +36,5 @@ line-length = 120
 asyncio_mode = "auto"
 
 [[tool.mypy.overrides]]
-module = "testcontainers.*"
+module = ["testcontainers.*", "aiokafka.*", "kafka.*"]
 ignore_missing_imports = true

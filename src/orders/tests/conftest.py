@@ -8,6 +8,7 @@ from pydantic import PostgresDsn
 from sqlalchemy.ext.asyncio import AsyncEngine, create_async_engine
 from testcontainers.postgres import PostgresContainer
 
+from core.config.kafka_settings import KafkaSettings
 from core.config.order_settings import Settings
 from src.orders.app import create_app
 from src.orders.tables import categories, meta, products
@@ -35,6 +36,12 @@ def settings(postgres_url) -> Settings:
     return settings
 
 
+@pytest.fixture
+def kafka_settings() -> KafkaSettings:
+    settings = KafkaSettings()
+    return settings
+
+
 @pytest.fixture(scope="function", autouse=True)
 async def init_db(engine: AsyncEngine):
     async with engine.begin() as conn:
@@ -47,8 +54,8 @@ async def init_db(engine: AsyncEngine):
 
 
 @pytest.fixture
-def app(settings: Settings) -> FastAPI:
-    return create_app(settings)
+def app(settings: Settings, kafka_settings: KafkaSettings) -> FastAPI:
+    return create_app(settings, kafka_settings)
 
 
 @pytest.fixture
