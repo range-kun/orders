@@ -44,3 +44,6 @@ test_products = [
         "category_id": 3,
     },
 ]
+
+
+auth_user = {"id": 1, "is_active": True}

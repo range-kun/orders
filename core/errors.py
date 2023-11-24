@@ -32,3 +32,13 @@ class CategoryNotExistsError(HTTPException):
 
 class NoDataError(Exception):
     pass
+
+
+class NotAuthenticated(HTTPException):
+    def __init__(self):
+        super().__init__(status_code=403, detail="Could not valid credentials")
+
+
+class NotValidToken(HTTPException):
+    def __init__(self, detail: str):
+        super().__init__(status_code=401, detail=detail)

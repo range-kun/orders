@@ -1,10 +1,10 @@
 from logging.config import fileConfig
 
 from alembic import context
-from base import meta
 from sqlalchemy import create_engine
 
 from core.config.order_settings import Settings
+from mirations.base import meta
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
