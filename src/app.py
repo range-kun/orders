@@ -7,6 +7,7 @@ from core.config.auth_settings import AuthSettings
 from core.config.kafka_settings import KafkaSettings
 from core.config.order_settings import Settings
 from src.auth.routes import auth_router
+from src.metrics import PrometheusMetricsMiddleware, metrics_router
 from src.orders.routes import category_router, product_router
 
 
@@ -23,6 +24,9 @@ def create_app(settings_: Settings, kafka_settings: KafkaSettings, auth_settings
     fast_api_app.include_router(product_router)
     fast_api_app.include_router(category_router)
     fast_api_app.include_router(auth_router)
+    fast_api_app.include_router(metrics_router)
+
+    fast_api_app.add_middleware(PrometheusMetricsMiddleware)
 
     return fast_api_app
 

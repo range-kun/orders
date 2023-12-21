@@ -28,6 +28,7 @@ python-jose = "^3.3.0"
 pydantic = {extras = ["email"], version = "^2.5.2"}
 jose = "^1.0.0"
 aioresponses = "^0.7.6"
+prometheus-client = "^0.19.0"
 
 
 [build-system]
