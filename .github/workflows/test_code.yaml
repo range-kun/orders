@@ -1,0 +1,30 @@
+name: Run tests
+
+on:
+  push:
+    branches: [main]
+  pull_requests:
+    branches: [main]
+
+steps:
+  - uses: actions/checkout@v4
+  - name: Set up Python
+  - uses: actions/setup-python@v3
+    with:
+      python-version: '3.11'
+  - name: Install poetry
+    uses: abatilo/actions-poetry@v2
+  - name: Setup a local virtual environment
+    run: |
+      poetry config virtualenvs.create true --local
+      poetry config virtualenvs.in-project true --local
+  - name: Install the project dependencies
+    run: poetry install
+
+  - run: pip install ruff
+  - run: |
+      ruff check .
+      ruff fix .
+  - name: Run unit tests with pytest
+    run: |
+      pytest tests
