@@ -32,7 +32,7 @@ async def get_category_repository(connection: Annotated[AsyncConnection, Depends
 
 
 async def get_category_service(
-    category_repository: Annotated[CategoryRepository, Depends(get_category_repository)]
+    category_repository: Annotated[CategoryRepository, Depends(get_category_repository)],
 ) -> CategoryService:
     return CategoryService(repository=category_repository, response_model=CategoryOut)
 

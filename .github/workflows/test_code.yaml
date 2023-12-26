@@ -24,10 +24,9 @@ jobs:
       - name: Install the project dependencies
         run: poetry install
 
-      - run: pip install ruff
+      - run: poetry add ruff
       - run: |
           ruff check .
-          ruff fix .
       - name: Run unit tests with pytest
         run: |
           pytest tests
