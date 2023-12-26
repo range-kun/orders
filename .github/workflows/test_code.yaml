@@ -25,6 +25,7 @@ jobs:
         run: |
           poetry install
           poetry add ruff
+      - run: pip install ruff
       - run: |
           ruff check .
       - name: Run unit tests with pytest
