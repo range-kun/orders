@@ -22,9 +22,9 @@ jobs:
           poetry config virtualenvs.create true --local
           poetry config virtualenvs.in-project true --local
       - name: Install the project dependencies
-        run: poetry install
-
-      - run: poetry add ruff
+        run: |
+          poetry install
+          poetry add ruff
       - run: |
           ruff check .
       - name: Run unit tests with pytest
