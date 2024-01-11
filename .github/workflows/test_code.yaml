@@ -30,4 +30,5 @@ jobs:
           ruff check .
       - name: Run unit tests with pytest
         run: |
+          source $HOME/.poetry/env
           pytest tests
