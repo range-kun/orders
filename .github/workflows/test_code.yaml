@@ -24,11 +24,10 @@ jobs:
       - name: Install the project dependencies
         run: |
           poetry install
-          poetry add ruff
       - run: pip install ruff
       - run: |
           ruff check .
       - name: Run unit tests with pytest
         run: |
-          source $HOME/.poetry/env
+          source .venv/bin/activate
           pytest tests
