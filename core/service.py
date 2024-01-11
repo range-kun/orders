@@ -1,5 +1,7 @@
 from typing import Generic
 
+from starlette.responses import JSONResponse
+
 from core.repository import BaseAlchemyRepository
 from core.schemas import PyModel, T
 
@@ -28,3 +30,10 @@ class BaseService(Generic[PyModel, T]):
 class KafkaInterface(Generic[PyModel, T]):
     payload_schema: type[PyModel]
     event_schema: type[T]
+
+
+class AuthInterface(Generic[PyModel]):
+    model_cls: type[PyModel]
+
+    async def __call__(self, *args, **kwargs) -> JSONResponse | PyModel:
+        return NotImplemented

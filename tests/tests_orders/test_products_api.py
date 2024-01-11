@@ -4,16 +4,47 @@ from fastapi.encoders import jsonable_encoder
 from src.orders.routes import PRODUCTS_PREFIX
 
 
-async def test_delete_products_not_found(client):
+@pytest.mark.usefixtures("authenticate_user")
+async def test_delete_products_not_found(client, mock_kafka_producer):
     response = client.delete(f"{PRODUCTS_PREFIX}/999")
     assert response.status_code == 404
     assert response.json() == {"detail": "No rows found for table products with next filters: {'id': 999}"}
 
+    mock_kafka_producer.send.assert_not_awaited()
 
-@pytest.mark.usefixtures("load_fixtures")
-async def test_delete_product_success(client):
+
+@pytest.mark.usefixtures("load_fixtures", "authenticate_user")
+async def test_delete_product_success(client, mock_kafka_producer):
     response = client.delete(f"{PRODUCTS_PREFIX}/2")
     assert response.status_code == 204
+
+    mock_kafka_producer.send.assert_awaited()
+
+
+async def test_delete_product_no_auth(client, mock_kafka_producer):
+    response = client.delete(f"{PRODUCTS_PREFIX}/2")
+    data = response.json()
+
+    assert response.status_code == 403
+    assert data == {"detail": "Could not valid credentials"}
+
+
+@pytest.mark.usefixtures("expired_authenticate_user")
+async def test_delete_product_auth_expired(client, mock_kafka_producer):
+    response = client.delete(f"{PRODUCTS_PREFIX}/2")
+    data = response.json()
+
+    assert response.status_code == 401
+    assert data == {"detail": "Token expired"}
+
+
+@pytest.mark.usefixtures("wrong_authentication")
+async def test_delete_product_wrong_authentication(client, mock_kafka_producer):
+    response = client.delete(f"{PRODUCTS_PREFIX}/2")
+    data = response.json()
+
+    assert response.status_code == 401
+    assert data == {"detail": "Invalid token"}
 
 
 @pytest.mark.usefixtures("load_fixtures")
@@ -38,8 +69,8 @@ async def test_get_product_not_found(client):
     assert response.json() == {"detail": "No rows found for table products with next filters: {'id': 999}"}
 
 
-@pytest.mark.usefixtures("load_categories")
-async def test_create_product_success(client, test_data_for_products, load_categories):
+@pytest.mark.usefixtures("load_categories", "authenticate_user")
+async def test_create_product_success(client, test_data_for_products, load_categories, mock_kafka_producer):
     insert_product = jsonable_encoder(test_data_for_products[0])
     response_create = client.post(PRODUCTS_PREFIX, json=insert_product)
     assert response_create.status_code == 201
@@ -55,7 +86,39 @@ async def test_create_product_success(client, test_data_for_products, load_categ
     assert created_product["created"] == fetched_product["created"]
     assert created_product["category_id"] == fetched_product["category"]["id"]
 
+    mock_kafka_producer.send.assert_awaited()
 
+
+def test_create_product_no_auth(client, test_data_for_products, mock_kafka_producer):
+    insert_product = jsonable_encoder(test_data_for_products[0])
+    response = client.post(PRODUCTS_PREFIX, json=insert_product)
+    data = response.json()
+
+    assert response.status_code == 403
+    assert data == {"detail": "Could not valid credentials"}
+
+
+@pytest.mark.usefixtures("expired_authenticate_user")
+async def test_create_product_auth_expired(client, test_data_for_products, mock_kafka_producer):
+    insert_product = jsonable_encoder(test_data_for_products[0])
+    response = client.post(PRODUCTS_PREFIX, json=insert_product)
+    data = response.json()
+
+    assert response.status_code == 401
+    assert data == {"detail": "Token expired"}
+
+
+@pytest.mark.usefixtures("wrong_authentication")
+async def test_create_product_wrong_auth(client, test_data_for_products):
+    insert_product = jsonable_encoder(test_data_for_products[0])
+    response = client.post(PRODUCTS_PREFIX, json=insert_product)
+    data = response.json()
+
+    assert response.status_code == 401
+    assert data == {"detail": "Invalid token"}
+
+
+@pytest.mark.usefixtures("authenticate_user")
 @pytest.mark.parametrize(
     "product_data_for_creation, expected_status_code, expected_detail",
     [
@@ -66,10 +129,10 @@ async def test_create_product_success(client, test_data_for_products, load_categ
                 {
                     "type": "string_too_short",
                     "loc": ["body", "name"],
-                    "msg": "String should have at least 1 characters",
+                    "msg": "String should have at least 1 character",
                     "input": "",
                     "ctx": {"min_length": 1},
-                    "url": "https://errors.pydantic.dev/2.4/v/string_too_short",
+                    "url": "https://errors.pydantic.dev/2.5/v/string_too_short",
                 },
                 {
                     "type": "value_error",
@@ -77,7 +140,7 @@ async def test_create_product_success(client, test_data_for_products, load_categ
                     "msg": "Value error, Should be positive value",
                     "input": -12,
                     "ctx": {"error": {}},
-                    "url": "https://errors.pydantic.dev/2.4/v/value_error",
+                    "url": "https://errors.pydantic.dev/2.5/v/value_error",
                 },
             ],
         ),
@@ -90,21 +153,21 @@ async def test_create_product_success(client, test_data_for_products, load_categ
                     "loc": ["body", "name"],
                     "msg": "Field required",
                     "input": {"description": "This is an invalid data."},
-                    "url": "https://errors.pydantic.dev/2.4/v/missing",
+                    "url": "https://errors.pydantic.dev/2.5/v/missing",
                 },
                 {
                     "type": "missing",
                     "loc": ["body", "price"],
                     "msg": "Field required",
                     "input": {"description": "This is an invalid data."},
-                    "url": "https://errors.pydantic.dev/2.4/v/missing",
+                    "url": "https://errors.pydantic.dev/2.5/v/missing",
                 },
                 {
                     "type": "missing",
                     "loc": ["body", "category_id"],
                     "msg": "Field required",
                     "input": {"description": "This is an invalid data."},
-                    "url": "https://errors.pydantic.dev/2.4/v/missing",
+                    "url": "https://errors.pydantic.dev/2.5/v/missing",
                 },
             ],
         ),
@@ -125,8 +188,8 @@ async def test_create_product_validation_error(
     assert detail == expected_detail
 
 
-@pytest.mark.usefixtures("load_fixtures")
-async def test_update_product_success(client, test_data_for_products):
+@pytest.mark.usefixtures("load_fixtures", "authenticate_user")
+async def test_update_product_success(client, test_data_for_products, mock_kafka_producer):
     new_updated_product = jsonable_encoder(test_data_for_products[0])
     product_path = f"{PRODUCTS_PREFIX}/{new_updated_product['id']}"
     new_updated_product["name"] = "New Shiny Name"
@@ -142,8 +205,10 @@ async def test_update_product_success(client, test_data_for_products):
     assert updated_product["created"] == fetched_product["created"]
     assert updated_product["category_id"] == fetched_product["category"]["id"]
 
+    mock_kafka_producer.send.assert_awaited()
 
-@pytest.mark.usefixtures("load_fixtures")
+
+@pytest.mark.usefixtures("load_fixtures", "authenticate_user")
 async def test_update_not_existing_object(client, test_data_for_products):
     new_updated_product = jsonable_encoder(test_data_for_products[0])
     response_update = client.put(f"{PRODUCTS_PREFIX}/999", json=new_updated_product)
@@ -153,7 +218,7 @@ async def test_update_not_existing_object(client, test_data_for_products):
     assert data == {"detail": "No rows found for table products with next filters: {'id': 999}"}
 
 
-@pytest.mark.usefixtures("load_fixtures")
+@pytest.mark.usefixtures("load_fixtures", "authenticate_user")
 def test_update_not_existing_category(client, test_data_for_products):
     new_updated_product = jsonable_encoder(test_data_for_products[0])
     new_updated_product["category_id"] = 123
@@ -164,7 +229,7 @@ def test_update_not_existing_category(client, test_data_for_products):
     assert data == {"detail": "Category with id 123 not exists"}
 
 
-@pytest.mark.usefixtures("load_fixtures")
+@pytest.mark.usefixtures("load_fixtures", "authenticate_user")
 def test_update_validation_error(client):
     invalid_data = {"description": "invalid data", "name": ""}
     response_update = client.put(f"{PRODUCTS_PREFIX}/1", json=invalid_data)
@@ -176,24 +241,54 @@ def test_update_validation_error(client):
         {
             "type": "string_too_short",
             "loc": ["body", "name"],
-            "msg": "String should have at least 1 characters",
+            "msg": "String should have at least 1 character",
             "input": "",
             "ctx": {"min_length": 1},
-            "url": "https://errors.pydantic.dev/2.4/v/string_too_short",
+            "url": "https://errors.pydantic.dev/2.5/v/string_too_short",
         },
         {
             "type": "missing",
             "loc": ["body", "price"],
             "msg": "Field required",
             "input": {"description": "invalid data", "name": ""},
-            "url": "https://errors.pydantic.dev/2.4/v/missing",
+            "url": "https://errors.pydantic.dev/2.5/v/missing",
         },
         {
             "type": "missing",
             "loc": ["body", "category_id"],
             "msg": "Field required",
             "input": {"description": "invalid data", "name": ""},
-            "url": "https://errors.pydantic.dev/2.4/v/missing",
+            "url": "https://errors.pydantic.dev/2.5/v/missing",
         },
     ]
     assert failed_data == data
+
+
+@pytest.mark.usefixtures("load_fixtures")
+async def test_update_product_no_auth(client, test_data_for_products):
+    new_updated_product = jsonable_encoder(test_data_for_products[0])
+    response_update = client.put(f"{PRODUCTS_PREFIX}/{new_updated_product['id']}", json=new_updated_product)
+    data = response_update.json()
+
+    assert response_update.status_code == 403
+    assert data == {"detail": "Could not valid credentials"}
+
+
+@pytest.mark.usefixtures("expired_authenticate_user")
+async def test_update_product_auth_expired(client, test_data_for_products):
+    new_updated_product = jsonable_encoder(test_data_for_products[0])
+    response_update = client.put(f"{PRODUCTS_PREFIX}/{new_updated_product['id']}", json=new_updated_product)
+    data = response_update.json()
+
+    assert response_update.status_code == 401
+    assert data == {"detail": "Token expired"}
+
+
+@pytest.mark.usefixtures("wrong_authentication")
+async def test_update_product_wrong_auth(client, test_data_for_products):
+    new_updated_product = jsonable_encoder(test_data_for_products[0])
+    response = client.post(PRODUCTS_PREFIX, json=new_updated_product)
+    data = response.json()
+
+    assert response.status_code == 401
+    assert data == {"detail": "Invalid token"}
