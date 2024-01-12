@@ -25,7 +25,7 @@ jobs:
           poetry config virtualenvs.in-project true --local
       - name: Install the project dependencies
         run: |
-          sudo apt-get update && sudo apt-get install --no-cache python3-dev gcc musl-dev libffi-dev libressl-dev
+          sudo apt-get update && sudo apt-get install python3-dev gcc musl-dev libffi-dev libressl-dev
           poetry install --no-use-pep517 cryptography
       - run: pip install ruff
       - run: |
